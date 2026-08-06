@@ -1,0 +1,40 @@
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: havenly
+      POSTGRES_USER: havenly
+      POSTGRES_PASSWORD: havenly-local
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U havenly"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://havenly:havenly-local@database:5432/havenly
+      SECRET_KEY: local-compose-secret-change-in-production
+      JWT_SECRET_KEY: local-compose-jwt-secret-change-in-production
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "5000:5000"
+    depends_on:
+      database:
+        condition: service_healthy
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:5000/api
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+volumes:
+  postgres_data:
+

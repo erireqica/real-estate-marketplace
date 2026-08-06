@@ -1,0 +1,15 @@
+import { ArrowRight, Building2, Home, KeyRound, Search, Store } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { api } from '../services/api'
+import type { Property } from '../types'
+import { PropertyCard } from '../components/property/PropertyCard'
+
+export function HomePage(){const navigate=useNavigate();const [featured,setFeatured]=useState<Property[]>([]);useEffect(()=>{api.properties(new URLSearchParams({perPage:'3'})).then(r=>setFeatured(r.items)).catch(()=>setFeatured([]))},[]);function search(form:FormData){const q=new URLSearchParams();for(const [key,value] of form)if(value)q.set(key,String(value));navigate(`/properties?${q}`)}return <>
+  <section className="hero"><div className="hero-overlay"/><div className="hero-content"><p className="eyebrow">CURATED HOMES · TRUSTED AGENTS</p><h1>Find a place that<br/><em>feels like home.</em></h1><p>Thoughtfully selected properties and local expertise, all in one place.</p><form action={search} className="quick-search"><label>LOCATION<input name="search" placeholder="City or neighborhood"/></label><label>LOOKING TO<select name="purpose"><option value="">Buy or rent</option><option value="sale">Buy</option><option value="rent">Rent</option></select></label><label>PROPERTY TYPE<select name="propertyType"><option value="">Any type</option><option value="apartment">Apartment</option><option value="house">House</option><option value="villa">Villa</option></select></label><button><Search size={19}/> Search</button></form></div></section>
+  <section className="section"><div className="section-heading"><div><p className="eyebrow green">DISCOVER</p><h2>Homes worth exploring</h2></div><Link to="/properties">View all properties <ArrowRight/></Link></div>{featured.length?<div className="property-grid">{featured.map(p=><PropertyCard key={p.id} property={p}/>)}</div>:<div className="empty">Connect the API and seed the database to see featured homes.</div>}</section>
+  <section className="categories section"><p className="eyebrow green">FIND YOUR FIT</p><h2>Explore by property type</h2><div className="category-grid">{[[Building2,'Apartments','apartment'],[Home,'Houses','house'],[KeyRound,'Rentals','rent'],[Store,'Commercial','commercial']].map(([Icon,label,value],i)=><Link key={label as string} to={`/properties?${i===2?'purpose':'propertyType'}=${value}`}><Icon/><span>{label as string}</span><ArrowRight/></Link>)}</div></section>
+  <section className="stats"><div><strong>240+</strong><span>Active listings</span></div><div><strong>12</strong><span>Cities covered</span></div><div><strong>48</strong><span>Trusted agents</span></div><div><strong>36</strong><span>New this month</span></div></section>
+  <section className="intro section"><div className="intro-image"/><div><p className="eyebrow green">A BETTER WAY HOME</p><h2>Clarity at every step of your property journey.</h2><p>Havenly brings inspiring homes, experienced local agents and useful market context into one calm, considered experience.</p><Link className="primary-link" to="/properties">Browse properties <ArrowRight/></Link></div></section>
+  </>}
+

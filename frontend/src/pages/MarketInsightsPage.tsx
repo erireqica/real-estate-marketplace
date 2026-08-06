@@ -1,0 +1,12 @@
+import { ArrowUpRight, Building2, Euro, MapPin, Ruler, TrendingUp, type LucideIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { api, type MarketStats, type TrendResult } from '../services/api'
+
+export function MarketInsightsPage(){
+  const [stats,setStats]=useState<MarketStats>();const [trend,setTrend]=useState<TrendResult>();const [city,setCity]=useState('')
+  useEffect(()=>{api.market(city).then(setStats);api.trends(city).then(setTrend)},[city])
+  if(!stats||!trend)return <div className="empty page-state">Preparing market insights…</div>
+  const max=Math.max(...trend.series.map(item=>item.averagePricePerSqm))
+  const metrics:[LucideIcon,string|number,string][]=[[Building2,stats.totalListings,'Active listings'],[Euro,`€${Math.round(stats.averagePrice).toLocaleString()}`,'Average price'],[Ruler,`€${Math.round(stats.averagePricePerSqm).toLocaleString()}`,'Average per m²'],[MapPin,stats.mostActiveLocation,'Most active city']]
+  return <div className="market-page"><header className="market-hero"><p className="eyebrow">MARKET INTELLIGENCE</p><h1>Understand the market.<br/><em>Move with confidence.</em></h1><p>Live listing statistics and clear observations for a more informed property search.</p></header><section className="market-content"><div className="market-toolbar"><div><p className="eyebrow green">MARKET OVERVIEW</p><h2>{city||'All locations'}</h2></div><label><MapPin/> Select city<select value={city} onChange={event=>setCity(event.target.value)}><option value="">All locations</option>{stats.cities.map(item=><option key={item}>{item}</option>)}</select></label></div><div className="metric-grid">{metrics.map(([Icon,value,label])=><article key={label}><Icon/><strong>{value}</strong><span>{label}</span></article>)}</div><div className="analytics-grid"><article className="trend-card"><div><p className="eyebrow green">PRICE MOVEMENT</p><h2>Average price per m²</h2></div><div className="bar-chart">{trend.series.map(item=><div key={item.year}><span style={{height:`${item.averagePricePerSqm/max*100}%`}}/><strong>€{item.averagePricePerSqm}</strong><small>{item.year}</small></div>)}</div></article><article className="observation"><TrendingUp/><p className="eyebrow">MARKET OBSERVATION</p><h2>{trend.city} prices have moved upward across the demonstration period.</h2><p>{stats.mostCommonType}s represent the most common listing type, with {stats.forSale} homes for sale and {stats.forRent} rentals currently represented.</p><span>{trend.disclaimer}</span><ArrowUpRight/></article></div></section></div>
+}
