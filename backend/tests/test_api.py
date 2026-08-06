@@ -1,9 +1,31 @@
 from app.extensions import db
-from app.models import AgentApplication, User, UserRole
+from app.models import AgentApplication, Conversation, ConversationMessage, Favorite, Property, PropertyImage, User, UserRole
+from app.seed import seed_database
 
 
 def test_health(client):
     assert client.get("/api/health").json["status"] == "ok"
+
+
+def test_demo_seed_is_repeatable_and_complete(app):
+    with app.app_context():
+        seed_database()
+        seed_database()
+        assert db.session.scalar(db.select(db.func.count()).select_from(User)) == 12
+        assert db.session.scalar(db.select(db.func.count()).select_from(Property)) == 28
+        assert db.session.scalar(db.select(db.func.count()).select_from(Favorite)) == 22
+        assert db.session.scalar(db.select(db.func.count()).select_from(Conversation)) == 9
+        assert db.session.scalar(db.select(db.func.count()).select_from(ConversationMessage)) == 35
+        assert db.session.scalar(db.select(db.func.count()).select_from(AgentApplication)) == 3
+        assert db.session.scalar(db.select(db.func.count()).select_from(PropertyImage)) == 50
+        assert db.session.scalar(db.select(db.func.count(db.func.distinct(PropertyImage.url)))) == 50
+        galleries = (
+            db.select(PropertyImage.property_id)
+            .group_by(PropertyImage.property_id)
+            .having(db.func.count(PropertyImage.id) > 1)
+            .subquery()
+        )
+        assert db.session.scalar(db.select(db.func.count()).select_from(galleries)) == 9
 
 
 def test_register_login_and_profile(client):
