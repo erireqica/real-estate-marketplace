@@ -1,13 +1,18 @@
+import os
+
 from flask import Flask
 from .config import config_by_name
 from .extensions import cors, db, jwt, migrate
 
 
 def create_app(config_name: str | None = None) -> Flask:
-    if config_name == "production" and not __import__("os").getenv("DATABASE_URL"):
+    config_name = config_name or os.getenv("APP_ENV", "development")
+    if config_name not in config_by_name:
+        raise RuntimeError(f"Unknown APP_ENV: {config_name}")
+    if config_name == "production" and not os.getenv("DATABASE_URL"):
         raise RuntimeError("DATABASE_URL is required in production.")
     app = Flask(__name__)
-    app.config.from_object(config_by_name[config_name or "development"])
+    app.config.from_object(config_by_name[config_name])
 
     db.init_app(app)
     migrate.init_app(app, db)

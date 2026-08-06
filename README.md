@@ -43,7 +43,7 @@ cd backend
 Set `DATABASE_URL` in `backend/.env` to a PostgreSQL SQLAlchemy URL such as:
 
 ```dotenv
-DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/havenly
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/havenly
 SECRET_KEY=generate-a-long-random-secret
 JWT_SECRET_KEY=generate-a-different-long-random-secret
 FRONTEND_URL=http://localhost:5173
@@ -106,12 +106,36 @@ The backend tests cover authentication, role denial, agent listing creation, cro
 
 ## Deployment notes
 
-- Run `flask --app run.py db upgrade` as a release step.
-- Use managed PostgreSQL and set `DATABASE_URL` at runtime.
+- Set `APP_ENV=production` and supply `DATABASE_URL` through the hosting
+  platform's secret environment variables. Neon connection strings can remain
+  in their provided `postgresql://...?sslmode=require&channel_binding=require`
+  form; the backend selects the installed psycopg 3 SQLAlchemy dialect while
+  preserving the SSL parameters.
+- Run `flask --app run.py db upgrade` as a release step after the production
+  environment variables are available.
+- Run `flask --app run.py seed` once only if the public deployment should
+  contain the fictional portfolio demonstration dataset and accounts.
 - Build the frontend with the deployed `VITE_API_URL`; Vite values are embedded during compilation.
 - Set unique, high-entropy `SECRET_KEY` and `JWT_SECRET_KEY` values.
 - Serve the API behind HTTPS and restrict `FRONTEND_URL` to the deployed web origin.
 - External image storage can replace URL-based demonstration images without changing the property/image relationship.
+
+For a manual Neon release step, use Neon's direct connection string (the
+hostname does not contain `-pooler`) because schema migration tools should not
+run through transaction pooling. Supply it temporarily through the environment,
+never in a committed file:
+
+```powershell
+cd backend
+$env:APP_ENV = "production"
+$env:DATABASE_URL = "<direct Neon connection string>"
+.venv/Scripts/flask --app run.py db upgrade
+.venv/Scripts/flask --app run.py seed  # optional, one-time demo data
+```
+
+The deployed application can use Neon's pooled connection string for normal
+runtime traffic. Remove the temporary shell variables after a local release
+operation, or configure them only in the hosting platform's secret store.
 
 ## Portfolio presentation
 

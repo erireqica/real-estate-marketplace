@@ -5,6 +5,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def sqlalchemy_database_url(value: str) -> str:
+    """Select the installed psycopg 3 dialect without altering URL options."""
+    if value.startswith("postgres://"):
+        return value.replace("postgres://", "postgresql+psycopg://", 1)
+    if value.startswith("postgresql://"):
+        return value.replace("postgresql://", "postgresql+psycopg://", 1)
+    return value
+
+
 class BaseConfig:
     SECRET_KEY = os.getenv("SECRET_KEY", "development-only-change-me")
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "development-jwt-secret-change-before-deploy-32-chars")
@@ -20,9 +29,9 @@ class BaseConfig:
 
 
 class DevelopmentConfig(BaseConfig):
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        "DATABASE_URL", "postgresql+psycopg://postgres:postgres@localhost:5432/havenly"
-    )
+    SQLALCHEMY_DATABASE_URI = sqlalchemy_database_url(os.getenv(
+        "DATABASE_URL", "postgresql+psycopg://postgres:postgres@localhost:5433/havenly"
+    ))
 
 
 class TestingConfig(BaseConfig):
@@ -34,7 +43,7 @@ class TestingConfig(BaseConfig):
 class ProductionConfig(BaseConfig):
     # Hosting platforms inject this value at runtime. Keeping import side effects
     # out of configuration allows tooling and tests to load the app safely.
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "")
+    SQLALCHEMY_DATABASE_URI = sqlalchemy_database_url(os.getenv("DATABASE_URL", ""))
 
 
 config_by_name = {
