@@ -111,6 +111,10 @@ The backend tests cover authentication, role denial, agent listing creation, cro
   in their provided `postgresql://...?sslmode=require&channel_binding=require`
   form; the backend selects the installed psycopg 3 SQLAlchemy dialect while
   preserving the SSL parameters.
+- Production enables SQLAlchemy connection pre-ping and recycles connections
+  after four minutes so long-running web workers do not reuse connections made
+  stale by Neon scale-to-zero. Local and Docker database pools use their normal
+  SQLAlchemy defaults.
 - Run `flask --app run.py db upgrade` as a release step after the production
   environment variables are available.
 - Run `flask --app run.py seed` once only if the public deployment should

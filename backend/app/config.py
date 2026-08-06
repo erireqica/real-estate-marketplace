@@ -44,6 +44,13 @@ class ProductionConfig(BaseConfig):
     # Hosting platforms inject this value at runtime. Keeping import side effects
     # out of configuration allows tooling and tests to load the app safely.
     SQLALCHEMY_DATABASE_URI = sqlalchemy_database_url(os.getenv("DATABASE_URL", ""))
+    # Neon can terminate idle connections when its compute scales to zero.
+    # Validate connections at checkout and retire them before the usual
+    # five-minute suspension window can leave stale handles in a web worker.
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 240,
+    }
 
 
 config_by_name = {
