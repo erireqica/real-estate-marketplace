@@ -1,5 +1,5 @@
 from .extensions import db
-from .models import Amenity, AgentApplication, ApplicationStatus, Inquiry, ListingPurpose, Property, PropertyImage, PropertyType, User, UserRole
+from .models import Amenity, AgentApplication, ApplicationStatus, Conversation, ConversationMessage, Favorite, ListingPurpose, Property, PropertyImage, PropertyType, User, UserRole
 
 IMAGES = [
     "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1400&q=85",
@@ -47,6 +47,8 @@ def seed_database():
         db.session.add_all([PropertyImage(property_id=item.id, url=IMAGES[(i+j)%len(IMAGES)], position=j, alt_text=title) for j in range(3)])
         properties.append(item)
     db.session.add(AgentApplication(user_id=applicant.id, full_name=applicant.full_name, email=applicant.email, phone=applicant.phone, city="Prishtina", experience="Three years in residential sales", message="I would like to bring my growing client network and a thoughtful approach to Havenly.", status=ApplicationStatus.PENDING))
-    db.session.add(Inquiry(sender_id=user.id, agent_id=agent1.id, property_id=properties[0].id, message="Is this home available for a viewing this weekend?"))
+    db.session.add_all([Favorite(user_id=user.id, property_id=properties[0].id), Favorite(user_id=user.id, property_id=properties[2].id)])
+    conversation = Conversation(user_id=user.id, agent_id=agent1.id, property_id=properties[0].id)
+    db.session.add(conversation); db.session.flush()
+    db.session.add_all([ConversationMessage(conversation_id=conversation.id, sender_id=user.id, body="Is this home available for a viewing this weekend?", is_read=True), ConversationMessage(conversation_id=conversation.id, sender_id=agent1.id, body="Yes, it is available Saturday afternoon. Would 14:00 work for you?", is_read=False)])
     db.session.commit()
-

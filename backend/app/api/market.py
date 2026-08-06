@@ -24,9 +24,19 @@ def overview():
     return jsonify(stats)
 
 
+@market_bp.get("/breakdown")
+def breakdown():
+    city = request.args.get("city") or None
+    filters = [Property.status == PropertyStatus.ACTIVE]
+    if city: filters.append(Property.city == city)
+    type_rows = db.session.execute(db.select(Property.property_type, func.count(Property.id), func.avg(Property.price), func.avg(Property.price / Property.area_sqm)).where(*filters).group_by(Property.property_type).order_by(func.count(Property.id).desc())).all()
+    purpose_rows = db.session.execute(db.select(Property.purpose, func.count(Property.id)).where(*filters).group_by(Property.purpose)).all()
+    total = sum(row[1] for row in type_rows)
+    return jsonify({"city": city or "All locations", "total": total, "propertyTypes": [{"type": row[0].value, "count": row[1], "share": round(row[1] * 100 / total, 1) if total else 0, "averagePrice": round(float(row[2]), 2), "averagePricePerSqm": round(float(row[3]), 2)} for row in type_rows], "purposes": [{"purpose": row[0].value, "count": row[1], "share": round(row[1] * 100 / total, 1) if total else 0} for row in purpose_rows]})
+
+
 @market_bp.get("/trends")
 def trends():
     city = request.args.get("city", "Prishtina")
     base = {"Prishtina": 1220, "Prizren": 930, "Peja": 810, "Ferizaj": 760}.get(city, 880)
     return jsonify({"city": city, "source": "demonstration", "series": [{"year": 2022+i, "averagePricePerSqm": round(base*(1.055**i))} for i in range(5)], "disclaimer": "Demonstration trends are market observations, not financial advice."})
-
