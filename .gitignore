@@ -1,10 +1,36 @@
 .env
+.env.*
+!.env.example
+!*.env.example
 .venv/
+venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
 instance/
 node_modules/
 dist/
+build/
 coverage/
+*.tsbuildinfo
 
+# Local databases and database/container runtime data
+*.db
+*.sqlite
+*.sqlite3
+postgres-data/
+pgdata/
+docker-data/
+volumes/
+
+# Private user uploads and credentials
+uploads/
+cvs/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Generated Vite config output (the TypeScript source is canonical)
+/frontend/vite.config.js
+/frontend/vite.config.d.ts
