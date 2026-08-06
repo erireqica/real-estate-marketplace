@@ -62,18 +62,24 @@ def populate_amenities(item, data):
     item.amenities = selected
 
 
-@agent_bp.post("/properties")
-@roles_required(UserRole.AGENT, UserRole.ADMIN)
-def create_property():
-    user, data = current_user(), request.get_json(silent=True) or {}
+def create_property_for_agent(agent_id, data):
     base = re.sub(r"[^a-z0-9]+", "-", str(data.get("title", "")).lower()).strip("-") or "property"
-    item = Property(agent_id=user.id, slug=f"{base}-{user.id}-{Property.query.count()+1}")
+    item = Property(agent_id=agent_id, slug=f"{base}-{agent_id}-{Property.query.count()+1}")
     populate_property(item, data)
     populate_amenities(item, data)
     db.session.add(item)
     db.session.flush()
     for position, url in enumerate(data.get("images", [])):
-        if str(url).startswith(("http://", "https://")): db.session.add(PropertyImage(property_id=item.id, url=url, position=position, alt_text=item.title))
+        if str(url).startswith(("http://", "https://")):
+            db.session.add(PropertyImage(property_id=item.id, url=url, position=position, alt_text=item.title))
+    return item
+
+
+@agent_bp.post("/properties")
+@roles_required(UserRole.AGENT, UserRole.ADMIN)
+def create_property():
+    user, data = current_user(), request.get_json(silent=True) or {}
+    item = create_property_for_agent(user.id, data)
     db.session.commit()
     return jsonify({"property": property_payload(item)}), 201
 

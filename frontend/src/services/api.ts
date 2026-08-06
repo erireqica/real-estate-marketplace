@@ -46,6 +46,7 @@ export const api={
   adminUsers:()=>request<{items:AdminUser[]}>('/admin/users'),
   updateUser:(id:number,data:{isActive?:boolean;role?:'user'|'agent'})=>request<{user:AdminUser}>(`/admin/users/${id}`,{method:'PATCH',body:JSON.stringify(data)}),
   adminProperties:()=>request<{items:(ManagedProperty&{agent:User})[]}>('/admin/properties'),
+  adminCreateProperty:(data:Record<string,unknown>)=>request<{property:ManagedProperty&{agent:User}}>('/admin/properties',{method:'POST',body:JSON.stringify(data)}),
   adminApplications:()=>request<{items:AgentApplication[]}>('/admin/agent-applications'),
   reviewApplication:(id:number,status:'approved'|'rejected')=>request<{status:string}>(`/admin/agent-applications/${id}`,{method:'PATCH',body:JSON.stringify({status})}),
   breakdown:(city='')=>request<MarketBreakdown>(`/market/breakdown${city?`?city=${encodeURIComponent(city)}`:''}`),

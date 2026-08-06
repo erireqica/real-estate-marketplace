@@ -63,6 +63,29 @@ def test_agent_can_create_property(client):
     assert response.json["property"]["amenities"] == payload["amenities"]
 
 
+def test_admin_can_create_property_for_active_agent(client):
+    agent = authenticate(client, "assigned-agent@example.com", UserRole.AGENT)
+    admin = authenticate(client, "property-admin@example.com", UserRole.ADMIN)
+    with client.application.app_context():
+        agent_id = db.session.scalar(db.select(User.id).where(User.email == "assigned-agent@example.com"))
+    payload = {"title":"Admin-created listing", "description":"A complete listing created by an administrator for an agent.", "price":175000, "purpose":"sale", "propertyType":"house", "city":"Prishtina", "address":"Dardania", "areaSqm":130, "amenities":["Parking"], "images":[], "agentId":agent_id}
+    response = client.post("/api/admin/properties", json=payload, headers=admin)
+    assert response.status_code == 201
+    assert response.json["property"]["agent"]["id"] == agent_id
+    assert any(item["id"] == response.json["property"]["id"] for item in client.get("/api/agent/properties", headers=agent).json["items"])
+    assert any(item["id"] == response.json["property"]["id"] for item in client.get("/api/admin/properties", headers=admin).json["items"])
+
+
+def test_admin_property_creation_requires_valid_agent(client):
+    admin = authenticate(client, "validation-admin@example.com", UserRole.ADMIN)
+    user = authenticate(client, "not-an-agent@example.com", UserRole.USER)
+    payload = {"title":"Invalid owner listing", "description":"A complete listing that must not be assigned to a normal user.", "price":100000, "purpose":"sale", "propertyType":"apartment", "city":"Peja", "address":"Centre", "areaSqm":80, "images":[]}
+    with client.application.app_context():
+        user_id = db.session.scalar(db.select(User.id).where(User.email == "not-an-agent@example.com"))
+    assert client.post("/api/admin/properties", json=payload | {"agentId":user_id}, headers=admin).status_code == 400
+    assert client.post("/api/admin/properties", json=payload, headers=user).status_code == 403
+
+
 def test_agent_cannot_delete_another_agents_property(client):
     first = authenticate(client, "first@example.com", UserRole.AGENT)
     second = authenticate(client, "second@example.com", UserRole.AGENT)

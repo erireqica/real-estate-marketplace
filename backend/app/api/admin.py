@@ -5,6 +5,7 @@ from ..authz import current_user, roles_required
 from ..errors import ApiError
 from ..extensions import db
 from ..models import AgentApplication, ApplicationStatus, Property, User, UserRole
+from .agent import create_property_for_agent, property_payload
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -42,6 +43,22 @@ def update_user(user_id):
 def properties():
     rows = db.session.execute(db.select(Property, User).join(User, Property.agent_id == User.id).order_by(Property.created_at.desc())).all()
     return jsonify({"items": [p.to_card_dict() | {"description": p.description, "parkingSpaces": p.parking_spaces, "floor": p.floor, "yearBuilt": p.year_built, "images": [{"id": image.id, "url": image.url, "altText": image.alt_text} for image in p.images], "status": p.status.value, "agent": u.to_dict()} for p,u in rows]})
+
+
+@admin_bp.post("/properties")
+@roles_required(UserRole.ADMIN)
+def create_property():
+    data = request.get_json(silent=True) or {}
+    try:
+        agent_id = int(data.get("agentId"))
+    except (TypeError, ValueError):
+        raise ApiError("Please select an Agent for this property.")
+    agent = db.session.get(User, agent_id)
+    if not agent or agent.role != UserRole.AGENT or not agent.is_active:
+        raise ApiError("Assigned owner must be an active Agent account.")
+    item = create_property_for_agent(agent.id, data)
+    db.session.commit()
+    return jsonify({"property": property_payload(item) | {"agent": agent.to_dict()}}), 201
 
 
 @admin_bp.get("/agent-applications")
