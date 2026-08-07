@@ -8,7 +8,7 @@ A responsive property platform with public listings, market insights, saved home
 
 **[Live website](https://havenly-property.vercel.app)** · **[GitHub repository](https://github.com/erireqica/real-estate-marketplace)** · **[API health](https://havenly-api.onrender.com/api/health)**
 
-> **Demo note:** the backend is hosted on a free Render instance, so the first request after a period of inactivity can take a little longer while the service wakes up.
+> **Demo note:** the backend is hosted on a free Render instance, so the first request after a period of inactivity can take a little longer while the service wakes up. Check API health for live updates.
 
 </div>
 
