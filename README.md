@@ -24,6 +24,10 @@ The application is deployed as three separate services:
 
 **Vercel** for the frontend · **Render** for the Flask API · **Neon** for PostgreSQL
 
+<p align="center">
+  <img src="docs/screenshots/Home.png" alt="Havenly home page" width="100%">
+</p>
+
 ---
 
 ## ✨ At a glance
@@ -46,6 +50,15 @@ Each property has a dedicated detail page with an image gallery, location, price
 
 The **Market Insights** section uses live listing data from PostgreSQL to calculate figures such as average price, average price per square metre, listing distribution and city-level breakdowns.
 
+<p align="center">
+  <img src="docs/screenshots/Properties.png" alt="Havenly property search and listings" width="49%">
+  <img src="docs/screenshots/PropertyDetails.png" alt="Havenly property details page" width="49%">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/MarketInsights.png" alt="Havenly Market Insights dashboard" width="100%">
+</p>
+
 ---
 
 ## 💬 Accounts and messaging
@@ -66,6 +79,11 @@ They can create, edit and delete listings, manage listing status, update propert
 
 Property ownership is enforced in the API, so an agent cannot modify another agent's listing by calling the backend directly.
 
+<p align="center">
+  <img src="docs/screenshots/AgentDashboard-properties.png" alt="Havenly agent property management" width="49%">
+  <img src="docs/screenshots/AgentDashboard-messages.png" alt="Havenly agent messaging workspace" width="49%">
+</p>
+
 ---
 
 ## 🛡️ Admin workspace
@@ -75,6 +93,10 @@ Administrators can manage the wider marketplace from a separate dashboard.
 They can view platform statistics, manage users, enable or disable accounts, change eligible users between User and Agent roles, create properties for agents, edit or remove any listing, reassign listing ownership and review agent applications.
 
 Approving an application promotes the linked user account to the Agent role.
+
+<p align="center">
+  <img src="docs/screenshots/AdminDashboard-applications.png" alt="Havenly Admin dashboard applications" width="100%">
+</p>
 
 ---
 
