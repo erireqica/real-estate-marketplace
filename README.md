@@ -1,56 +1,272 @@
-# Havenly — Real Estate Marketplace
+<div align="center">
 
-Havenly is a polished full-stack property marketplace built as a production-minded portfolio project. Visitors can explore homes without registering, compare local market statistics, and connect with listing agents. Approved agents manage their own portfolio and inquiries while administrators moderate the marketplace and agent network.
+# 🏡 Havenly
 
-## Product highlights
+### Full-stack real estate marketplace
 
-- Premium responsive home, property collection, and gallery-led detail experiences
-- Keyword search plus city, purpose, property type, price, bedroom, bathroom, area, and sorting support
-- Secure JWT registration/login and role-based API authorization
-- Saved properties and property-specific inquiries for registered users
-- Moderated agent application flow—users cannot self-assign the agent role
-- Agent workspace for portfolio CRUD, view statistics, and read/unread inquiries
-- Administrator workspace for platform statistics, users, listings, and application decisions
-- Database-derived market snapshots, city comparisons, and replaceable demonstration trend data
-- Convincing seed dataset spanning agents, users, cities, property types, amenities, applications, and messages
+A responsive property platform with public listings, market insights, saved homes, messaging, agent tools, and admin moderation.
 
-## Stack and architecture
+**[Live website](https://havenly-property.vercel.app)** · **[GitHub repository](https://github.com/erireqica/real-estate-marketplace)** · **[API health](https://havenly-api.onrender.com/api/health)**
 
-| Layer | Technology | Structure |
+> **Demo note:** the backend is hosted on a free Render instance, so the first request after a period of inactivity can take a little longer while the service wakes up.
+
+</div>
+
+---
+
+## 🌐 Overview
+
+Havenly is a full-stack real estate marketplace built with **React, TypeScript, Flask, and PostgreSQL**.
+
+The public side focuses on property discovery and market context. Registered users can save homes and speak directly with listing agents. Approved agents manage their own listings and conversations through a dedicated workspace, while administrators manage users, properties, and agent applications.
+
+The application is deployed as three separate services:
+
+**Vercel** for the frontend · **Render** for the Flask API · **Neon** for PostgreSQL
+
+---
+
+## ✨ At a glance
+
+| Area | What it includes |
+|---|---|
+| **Property discovery** | Search, filtering, sorting, galleries, amenities, pricing, location and agent details |
+| **User accounts** | JWT authentication, saved homes, profile settings, password changes and conversations |
+| **Agent workspace** | Listing management, property statistics, recent listings and client messaging |
+| **Admin workspace** | User management, property moderation, agent assignment and application review |
+| **Market insights** | Database-derived market statistics, city breakdowns and demonstration price trends |
+
+---
+
+## 🌍 Public experience
+
+Visitors can browse active listings without creating an account. The property collection supports keyword search, city, sale/rent, property type, price range, bedrooms, bathrooms, minimum area and sorting.
+
+Each property has a dedicated detail page with an image gallery, location, price, specifications, amenities and listing-agent information.
+
+The **Market Insights** section uses live listing data from PostgreSQL to calculate figures such as average price, average price per square metre, listing distribution and city-level breakdowns.
+
+---
+
+## 💬 Accounts and messaging
+
+Authentication uses access and refresh JWTs, with account state restored on the frontend when a session is still valid.
+
+Registered users can save properties, edit their profile, change their password and start a conversation from a property page. Conversations stay linked to the specific property and agent, with reply history and unread-message indicators.
+
+Users can also apply to become an agent. Applications include profile information, optional agency details and a PDF CV. Approval is handled by an administrator rather than by allowing users to assign themselves a higher role.
+
+---
+
+## 🧑‍💼 Agent workspace
+
+Approved agents get a separate dashboard for their own portfolio.
+
+They can create, edit and delete listings, manage listing status, update property details, amenities and images, and view basic performance information such as property views and unread messages.
+
+Property ownership is enforced in the API, so an agent cannot modify another agent's listing by calling the backend directly.
+
+---
+
+## 🛡️ Admin workspace
+
+Administrators can manage the wider marketplace from a separate dashboard.
+
+They can view platform statistics, manage users, enable or disable accounts, change eligible users between User and Agent roles, create properties for agents, edit or remove any listing, reassign listing ownership and review agent applications.
+
+Approving an application promotes the linked user account to the Agent role.
+
+---
+
+## 🧠 Architecture
+
+```text
+┌──────────────────────────────┐
+│           Vercel             │
+│   React + TypeScript + Vite  │
+└──────────────┬───────────────┘
+               │ HTTPS / JSON
+               ▼
+┌──────────────────────────────┐
+│           Render             │
+│        Flask REST API        │
+│     JWT + SQLAlchemy         │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│            Neon              │
+│         PostgreSQL           │
+│     Alembic migrations       │
+└──────────────────────────────┘
+```
+
+The frontend and backend are deployed independently. Production URLs, secrets and database credentials are provided through environment variables rather than committed to the repository.
+
+---
+
+## 🛠 Tech stack
+
+| Frontend | Backend | Data & deployment |
 |---|---|---|
-| Web | React, TypeScript, Vite, Tailwind CSS, React Router | Pages, reusable components, layouts, context, typed API service |
-| API | Python, Flask, Flask-JWT-Extended | Application factory, blueprints, authorization helpers, models, seed command |
-| Data | PostgreSQL, SQLAlchemy, Alembic | Normalized relational schema with constraints, indexes, timestamps, and migrations |
+| React | Python | PostgreSQL |
+| TypeScript | Flask | Neon |
+| Vite | Flask-SQLAlchemy | Alembic |
+| React Router | Flask-JWT-Extended | Docker |
+| Tailwind CSS | Flask-CORS | Docker Compose |
+| Lucide React | Gunicorn | Vercel / Render |
 
-The frontend and API deploy independently. Configuration comes from environment variables; secrets and deployment URLs are not embedded in source code.
+---
 
-## Local development
+## 🗃 Data model
 
-Prerequisites: Node.js 22+, Python 3.13+, and PostgreSQL 15+.
+The main relationships are kept intentionally relational:
 
-### API
+```text
+User
+├── Properties
+├── Favorites
+├── Agent Applications
+└── Conversations
+
+Property
+├── Property Images
+├── Amenities
+├── Favorites
+└── Conversations
+
+Conversation
+└── Conversation Messages
+```
+
+The schema includes unique constraints, indexed lookup fields, timestamps, positive price/area checks, foreign keys and ownership relationships.
+
+---
+
+## 🧪 Demo data
+
+The repository includes repeatable fictional seed data so the application is populated immediately after setup.
+
+Current seed content:
+
+| Data | Count |
+|---|---:|
+| Users | 12 |
+| Approved agents | 5 |
+| Properties | 28 |
+| Property images | 50 |
+| Favorites | 22 |
+| Conversations | 9 |
+| Messages | 35 |
+| Agent applications | 3 |
+
+The seed is repeatable and is scoped to fictional `@havenly.test` accounts so normal user data is not intentionally replaced.
+
+### 🔑 Demo accounts
+
+All demo accounts use:
+
+```text
+Password123!
+```
+
+| Role | Email |
+|---|---|
+| Administrator | `admin@havenly.test` |
+| Agent | `agent@havenly.test` |
+| Agent | `drita@havenly.test` |
+| User | `user@havenly.test` |
+| Pending applicant | `applicant@havenly.test` |
+
+---
+
+## 🔌 API structure
+
+The Flask API is split into focused blueprints:
+
+```text
+/api/auth
+/api/properties
+/api/account
+/api/agent
+/api/admin
+/api/market
+```
+
+Sensitive actions are protected in the backend through authenticated-user checks, role checks and listing-ownership checks.
+
+---
+
+## ✅ Testing
+
+The backend currently includes **19 automated tests** covering the main application flows and production database configuration.
+
+The tests cover areas such as authentication, role restrictions, property ownership, admin actions, favorites, conversations, unread messages, password changes, agent applications, seed repeatability and Neon connection handling.
+
+Frontend checks:
+
+```bash
+npm run lint
+npm run build
+```
+
+Backend checks:
+
+```bash
+pytest
+```
+
+---
+
+## 💻 Run locally
+
+### Requirements
+
+- Node.js 22+
+- Python 3.13+
+- PostgreSQL 15+
+
+Clone the repository:
+
+```bash
+git clone https://github.com/erireqica/real-estate-marketplace.git
+cd real-estate-marketplace
+```
+
+### Backend
+
+Create the environment file:
 
 ```powershell
 Copy-Item backend/.env.example backend/.env
+```
+
+Example:
+
+```dotenv
+APP_ENV=development
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/havenly
+SECRET_KEY=replace-with-a-long-random-value
+JWT_SECRET_KEY=replace-with-a-different-long-random-value
+FRONTEND_URL=http://localhost:5173
+FRONTEND_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```
+
+Install dependencies and prepare the database:
+
+```powershell
 python -m venv backend/.venv
 backend/.venv/Scripts/python -m pip install -r backend/requirements.txt
+
 cd backend
 .venv/Scripts/flask --app run.py db upgrade
 .venv/Scripts/flask --app run.py seed
 .venv/Scripts/flask --app run.py run --debug
 ```
 
-Set `DATABASE_URL` in `backend/.env` to a PostgreSQL SQLAlchemy URL such as:
-
-```dotenv
-DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/havenly
-SECRET_KEY=generate-a-long-random-secret
-JWT_SECRET_KEY=generate-a-different-long-random-secret
-FRONTEND_URL=http://localhost:5173
-FRONTEND_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
-```
-
 ### Frontend
+
+In another terminal:
 
 ```powershell
 Copy-Item frontend/.env.example frontend/.env
@@ -59,90 +275,82 @@ npm install
 npm run dev
 ```
 
-`VITE_API_URL` defaults to `http://localhost:5000/api`.
+Open:
 
-### Docker Compose
+```text
+http://localhost:5173
+```
 
-```powershell
+---
+
+## 🐳 Docker
+
+The project also includes a complete Docker Compose setup with PostgreSQL, Flask and the built frontend.
+
+```bash
 docker compose up --build
 docker compose exec api flask --app run.py seed
 ```
 
-Open `http://localhost:5173`.
+Then open:
 
-## Demonstration accounts
-
-All seeded accounts use `Password123!`.
-
-| Role | Email |
-|---|---|
-| Administrator | `admin@havenly.test` |
-| Agent | `agent@havenly.test` |
-| User | `user@havenly.test` |
-| Pending applicant | `applicant@havenly.test` |
-
-These credentials are demonstration data only and must not be used in production.
-
-## API organization
-
-- `/api/auth` — registration, login, current identity
-- `/api/properties` — public discovery and property details
-- `/api/account` — profile, favorites, inquiries, agent application
-- `/api/agent` — agent-owned listings, metrics, and inquiry inbox
-- `/api/admin` — platform moderation and application decisions
-- `/api/market` — aggregate market snapshots and trend series
-
-Ownership and role checks are enforced in the API. Hiding a frontend route is never treated as authorization.
-
-## Quality checks
-
-```powershell
-backend/.venv/Scripts/python -m pytest backend/tests -q
-cd frontend
-npm run build
+```text
+http://localhost:5173
 ```
 
-The backend tests cover authentication, role denial, agent listing creation, cross-agent ownership protection, and administrator promotion workflow. The frontend production command performs strict TypeScript compilation before bundling.
+---
 
-## Deployment notes
+## 🚀 Deployment notes
 
-- Set `APP_ENV=production` and supply `DATABASE_URL` through the hosting
-  platform's secret environment variables. Neon connection strings can remain
-  in their provided `postgresql://...?sslmode=require&channel_binding=require`
-  form; the backend selects the installed psycopg 3 SQLAlchemy dialect while
-  preserving the SSL parameters.
-- Production enables SQLAlchemy connection pre-ping and recycles connections
-  after four minutes so long-running web workers do not reuse connections made
-  stale by Neon scale-to-zero. Local and Docker database pools use their normal
-  SQLAlchemy defaults.
-- Run `flask --app run.py db upgrade` as a release step after the production
-  environment variables are available.
-- Run `flask --app run.py seed` once only if the public deployment should
-  contain the fictional portfolio demonstration dataset and accounts.
-- Build the frontend with the deployed `VITE_API_URL`; Vite values are embedded during compilation.
-- Set unique, high-entropy `SECRET_KEY` and `JWT_SECRET_KEY` values.
-- Serve the API behind HTTPS and restrict `FRONTEND_URL` to the deployed web origin.
-- External image storage can replace URL-based demonstration images without changing the property/image relationship.
+Production uses:
 
-For a manual Neon release step, use Neon's direct connection string (the
-hostname does not contain `-pooler`) because schema migration tools should not
-run through transaction pooling. Supply it temporarily through the environment,
-never in a committed file:
+- **Vercel** — frontend
+- **Render** — Flask API
+- **Neon** — PostgreSQL
 
-```powershell
-cd backend
-$env:APP_ENV = "production"
-$env:DATABASE_URL = "<direct Neon connection string>"
-.venv/Scripts/flask --app run.py db upgrade
-.venv/Scripts/flask --app run.py seed  # optional, one-time demo data
+The production Flask configuration requires `DATABASE_URL`, keeps Neon SSL parameters intact, uses psycopg 3, and enables connection pre-ping / recycling to reduce stale connections after database idle periods.
+
+Alembic migrations run before Gunicorn starts, and Vercel is configured to rewrite SPA routes to `index.html` so direct visits and refreshes work correctly with React Router.
+
+---
+
+## 📁 Project structure
+
+```text
+real-estate-marketplace/
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   ├── models/
+│   │   ├── authz.py
+│   │   ├── config.py
+│   │   ├── errors.py
+│   │   ├── extensions.py
+│   │   └── seed.py
+│   ├── migrations/
+│   ├── tests/
+│   ├── Dockerfile
+│   └── run.py
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── types/
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   └── vercel.json
+│
+├── docker-compose.yml
+└── README.md
 ```
 
-The deployed application can use Neon's pooled connection string for normal
-runtime traffic. Remove the temporary shell variables after a local release
-operation, or configure them only in the hosting platform's secret store.
+---
 
-## Portfolio presentation
+<div align="center">
 
-Recommended screenshots: Home hero, filtered property collection, property gallery, Market Insights, Agent My Properties, Agent Messages, and Administrator Agent Applications. Add final hosted URLs and screenshots after deployment; deployment itself is intentionally outside the initial product build.
+**[Open Havenly](https://havenly-property.vercel.app)**
 
-Market trend history is explicitly marked as demonstration data and is structured behind a dedicated endpoint so a real historical provider can replace it later. Market observations are informational and are not financial advice.
+</div>
